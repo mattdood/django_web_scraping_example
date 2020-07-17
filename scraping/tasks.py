@@ -25,80 +25,66 @@ def save_function(article_list):
     new_count = 0
     print(source)
     try: 
-        latest_job = Job.objects.filter(source=source).order_by('-id')[0]
-        print(latest_job.scraped_pubdate)
+        latest_article = News.objects.filter(source=source).order_by('-id')[0]
+        print(latest_article.published)
     except:
-        latest_job = None
-        print('var: ', latest_job, 'type: ', type(latest_job))
+        latest_article = None
+        print('var: ', latest_article, 'type: ', type(latest_article))
     
-    for j in jobs:
-        if latest_job is None:
+    for article in article_list:
+        if latest_article is None:
             try:
-                print('job itself: ', j)
-                Job.objects.create(
-                    title = j['title'],
-                    job_description_scraped = j['description'],
-                    application_link = j['application_link'],
-                    tags = j['category'],
-                    scraped_pubdate = j['published'],
-                    source = j['source']
+                print('news itself: ', article)
+                News.objects.create(
+                    title = article['title'],
+                    link = article['link'],
+                    published = article['published'],
+                    source = article['source']
                 )
                 new_count += 1
             except:
                 print('failed at latest_job is none')
                 continue
-        elif latest_job.scraped_pubdate == None:
+        elif latest_article.published == None:
             try:
-                Job.objects.create(
-                    title = j['title'],
-                    job_description_scraped = j['description'],
-                    application_link = j['application_link'],
-                    tags = j['category'],
-                    scraped_pubdate = j['published'],
-                    source = j['source']
+                News.objects.create(
+                    title = article['title'],
+                    link = article['link'],
+                    published = article['published'],
+                    source = article['source']
                 )
                 new_count += 1
             except:
                 print('failed at latest_job.scraped_pubdate == none')
                 continue
-        elif latest_job.source == None:
+        elif latest_article.source == None:
             try:
-                Job.objects.create(
-                    title = j['title'],
-                    job_description_scraped = j['description'],
-                    application_link = j['application_link'],
-                    tags = j['category'],
-                    scraped_pubdate = j['published'],
-                    source = j['source']
+                News.objects.create(
+                    title = article['title'],
+                    link = article['link'],
+                    published = article['published'],
+                    source = article['source']
                 )
                 new_count += 1
             except:
                 print('failed at latest_job.source == none')
                 continue
-        elif latest_job.scraped_pubdate < j['published']:
+        elif latest_article.published < article['published']:
             try:
-                Job.objects.create(
-                    title = j['title'],
-                    job_description_scraped = j['description'],
-                    application_link = j['application_link'],
-                    tags = j['category'],
-                    scraped_pubdate = j['published'],
-                    source = j['source']
+                News.objects.create(
+                    title = article['title'],
+                    link = article['link'],
+                    published = article['published'],
+                    source = article['source']
                 )
                 new_count += 1
             except:
                 print('failed at latest_job.scraped_pubdate < j[published]')
                 continue
         else:
-            return print('job scraping failed, date was more recent than last pubdate')
-            # return print('stopped inputing jobs. here are the details: ',
-            #              'latest job scraped_pubdate in db: ',
-            #              latest_job.scraped_pubdate,
-            #              'source of the jobs: ',
-            #              j['source'],
-            #              'latest job published date from source: ',
-            #              j['published'])
-    logger.info(f'New jobs: {new_count} job(s) added.')
+            return print('news scraping failed, date was more recent than last published date')
+
+    logger.info(f'New articles: {new_count} articles(s) added.')
     return print('finished')
 
 # scraping function
@@ -128,7 +114,6 @@ def hackernews_rss():
                 'title': title,
                 'link': link,
                 'published': published,
-                'created_at': str(datetime.now()),
                 'source': 'HackerNews RSS'
             }
 
