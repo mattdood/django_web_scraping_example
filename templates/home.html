@@ -4,7 +4,32 @@
 {% block content %}
 
 <div class="row">
-    Test
+    <table>
+        <tbody>
+            {% for a in articles %}
+            <tr>
+                <td>
+                    <a href="{{ a.link }}">{{ a.title }}</a>
+                </td>
+                <td>
+                    <p>
+                        Source: {{ a.source }}
+                    </p>
+                </td>
+                <td>
+                    <p>
+                        Published: {{ a.published }}
+                    </p>
+                </td>
+                <td>
+                    <p>
+                        Scraped: {{ a.created_at }}
+                    </p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 {% endblock content %}
