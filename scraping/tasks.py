@@ -11,6 +11,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 from datetime import datetime
+import lxml
 
 # logging
 from celery.utils.log import get_task_logger
@@ -24,17 +25,31 @@ def save_function(article_list):
     source = article_list[0]['source']
     new_count = 0
     print(source)
+
+    error = True
     try: 
         latest_article = News.objects.filter(source=source).order_by('-id')[0]
         print(latest_article.published)
-    except:
-        latest_article = None
-        print('var: ', latest_article, 'type: ', type(latest_article))
-    
+        print('var TestTest: ', latest_article, 'type: ', type(latest_article))
+    except Exception as e:
+        print('Exception at latest_article: ')
+        print(e)
+        error = False
+        pass
+    finally:
+        # if the latest_article has an index out of range (nothing in model) it will fail
+        # this catches failure so it passes the first if statement
+        
+        # print(error, type(error))
+        if error is not True:
+            latest_article = None
+        # print(latest_article)
+
     for article in article_list:
+        # print(latest_article)
         if latest_article is None:
             try:
-                print('news itself: ', article)
+                # print('news itself: ', article) # checking article object
                 News.objects.create(
                     title = article['title'],
                     link = article['link'],
@@ -42,8 +57,9 @@ def save_function(article_list):
                     source = article['source']
                 )
                 new_count += 1
-            except:
-                print('failed at latest_job is none')
+            except Exception as e:
+                print('failed at latest_article is none')
+                print(e)
                 continue
         elif latest_article.published == None:
             try:
@@ -55,7 +71,7 @@ def save_function(article_list):
                 )
                 new_count += 1
             except:
-                print('failed at latest_job.scraped_pubdate == none')
+                print('failed at latest_article.published == none')
                 continue
         elif latest_article.source == None:
             try:
@@ -67,7 +83,7 @@ def save_function(article_list):
                 )
                 new_count += 1
             except:
-                print('failed at latest_job.source == none')
+                print('failed at latest_article.source == none')
                 continue
         elif latest_article.published < article['published']:
             try:
@@ -79,7 +95,7 @@ def save_function(article_list):
                 )
                 new_count += 1
             except:
-                print('failed at latest_job.scraped_pubdate < j[published]')
+                print('failed at latest_article.published < j[published]')
                 continue
         else:
             return print('news scraping failed, date was more recent than last published date')
@@ -106,7 +122,9 @@ def hackernews_rss():
         for a in articles:
             title = a.find('title').text
             link = a.find('link').text
-            published = a.find('pubDate').text
+            published_wrong = a.find('pubDate').text
+            published = datetime.strptime(published_wrong, '%a, %d %b %Y %H:%M:%S %z')
+            # print(published, published_wrong) # checking correct date format
 
             # create an "article" object with the data
             # from each "item"

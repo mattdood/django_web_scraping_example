@@ -10,6 +10,7 @@ django = "*"
 celery = "*"
 bs4 = "*"
 requests = "*"
+lxml = "*"
 
 [requires]
 python_version = "3.7"
