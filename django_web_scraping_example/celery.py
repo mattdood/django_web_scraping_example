@@ -9,8 +9,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_web_scraping_example.set
 
 app = Celery('django_web_scraping_example')
 
-# app.config_from_object('django.conf:settings', namespace='CELERY')
-
 app.conf.timezone = 'UTC'
 
 app.config_from_object("django.conf:settings", namespace="CELERY")
