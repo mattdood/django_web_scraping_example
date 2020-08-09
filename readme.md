@@ -17,9 +17,9 @@ Starting our RabbitMQ server (terminal #1):
 rabbitmq-server
 ```
 
-Starting the scraping (terminal #2):
+Starting the scraping and Django app (terminal #2):
 ```
-celery -A tasks worker -B -l INFO
+python manage.py runserver
 ```
 
 MIT License.
