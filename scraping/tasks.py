@@ -60,7 +60,7 @@ def save_function(article_list):
             except Exception as e:
                 print('failed at latest_article is none')
                 print(e)
-                continue
+                break
         elif latest_article.published == None:
             try:
                 News.objects.create(
@@ -72,7 +72,7 @@ def save_function(article_list):
                 new_count += 1
             except:
                 print('failed at latest_article.published == none')
-                continue
+                break
         elif latest_article.source == None:
             try:
                 News.objects.create(
@@ -84,7 +84,7 @@ def save_function(article_list):
                 new_count += 1
             except:
                 print('failed at latest_article.source == none')
-                continue
+                break
         elif latest_article.published < article['published']:
             try:
                 News.objects.create(
@@ -96,7 +96,7 @@ def save_function(article_list):
                 new_count += 1
             except:
                 print('failed at latest_article.published < j[published]')
-                continue
+                break
         else:
             return print('news scraping failed, date was more recent than last published date')
 
