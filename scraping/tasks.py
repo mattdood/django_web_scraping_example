@@ -21,10 +21,17 @@ logger = get_task_logger(__name__)
 # save function
 @shared_task(serializer='json')
 def save_function(article_list):
-    print('starting')
+    """Save articles to the database.
+
+    Saves articles to the database if they do not already exist.
+
+    Parameters:
+        article_list (json, str): A JSON list of article objects.
+    Returns:
+        News (class News): Article objects for each unique article.
+    """
     source = article_list[0]['source']
     new_count = 0
-    print(source)
 
     error = True
     try: 
@@ -40,16 +47,14 @@ def save_function(article_list):
         # if the latest_article has an index out of range (nothing in model) it will fail
         # this catches failure so it passes the first if statement
         
-        # print(error, type(error))
         if error is not True:
             latest_article = None
-        # print(latest_article)
 
     for article in article_list:
-        # print(latest_article)
+
+        # latest_article is None signifies empty DB
         if latest_article is None:
             try:
-                # print('news itself: ', article) # checking article object
                 News.objects.create(
                     title = article['title'],
                     link = article['link'],
@@ -61,30 +66,9 @@ def save_function(article_list):
                 print('failed at latest_article is none')
                 print(e)
                 break
-        elif latest_article.published == None:
-            try:
-                News.objects.create(
-                    title = article['title'],
-                    link = article['link'],
-                    published = article['published'],
-                    source = article['source']
-                )
-                new_count += 1
-            except:
-                print('failed at latest_article.published == none')
-                break
-        elif latest_article.source == None:
-            try:
-                News.objects.create(
-                    title = article['title'],
-                    link = article['link'],
-                    published = article['published'],
-                    source = article['source']
-                )
-                new_count += 1
-            except:
-                print('failed at latest_article.source == none')
-                break
+        
+        # latest_article.published date < article['published']
+        # halts the save, to avoid repetitive DB calls on already existing articles
         elif latest_article.published < article['published']:
             try:
                 News.objects.create(
@@ -98,7 +82,7 @@ def save_function(article_list):
                 print('failed at latest_article.published < j[published]')
                 break
         else:
-            return print('news scraping failed, date was more recent than last published date')
+            return print('news scraping failed')
 
     logger.info(f'New articles: {new_count} articles(s) added.')
     return print('finished')
@@ -106,6 +90,16 @@ def save_function(article_list):
 # scraping function
 @shared_task
 def hackernews_rss():
+    """Scraping function for HackerNews.
+
+    Executes web scraping using the `requests` library
+    to parse XML from the HackerNews RSS feed.
+
+    Parameters:
+        None
+    Returns:
+        article_list (JSON, str): A JSON list of articles.
+    """
     article_list = []
 
     try:
@@ -124,7 +118,6 @@ def hackernews_rss():
             link = a.find('link').text
             published_wrong = a.find('pubDate').text
             published = datetime.strptime(published_wrong, '%a, %d %b %Y %H:%M:%S %z')
-            # print(published, published_wrong) # checking correct date format
 
             # create an "article" object with the data
             # from each "item"
@@ -139,7 +132,7 @@ def hackernews_rss():
             article_list.append(article)
         
         print('Finished scraping the articles')
-        # after the loop, dump my saved objects into a .txt file
+
         return save_function(article_list)
     except Exception as e:
         print('The scraping job failed. See exception:')
